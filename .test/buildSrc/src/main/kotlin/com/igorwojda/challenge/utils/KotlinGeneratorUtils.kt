@@ -6,9 +6,12 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtImportList
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import java.io.File
+import org.slf4j.LoggerFactory
 
 object KotlinGeneratorUtils {
+	private val log = LoggerFactory.getLogger(KotlinGeneratorUtils::class.java)
     fun getTestFiles(challengeDirectoryPath: File): List<TestFile> {
+		log.debug(">>> Entering getTestFiles(challengeDirectoryPath={})", challengeDirectoryPath)
         val challengeKtFile =
             KotlinParserUtils.getChallengeKtFile(challengeDirectoryPath, ChallengeFile.CHALLENGE_KT)
         val solutionKtFile =
@@ -17,6 +20,7 @@ object KotlinGeneratorUtils {
 
         val solutions = getSolutions(solutionKtFile)
 
+		log.debug("<<< Exiting getTestFiles(challengeDirectoryPath={})", challengeDirectoryPath)
         return solutions.map {
             getTestFile(challengeName, challengeKtFile, solutionKtFile, it)
         }
@@ -29,6 +33,7 @@ object KotlinGeneratorUtils {
         solution: KtObjectDeclaration,
     ): TestFile {
 
+		log.debug(">>> Entering getTestFile(challengeName={},challengeKtFile={},solutionKtFile={},solution={})", challengeName, challengeKtFile, solutionKtFile, solution)
         val solutionName = checkNotNull(solution.name) { "Solution name is null" }
         val packageStr = getPackage(challengeKtFile, solutionName)
         val imports = getImports(solutionKtFile, challengeKtFile)
@@ -48,6 +53,7 @@ object KotlinGeneratorUtils {
         val testrSolutionFileName = getFileName(solution, challengeName)
         val relativePath = solutionName.lowercase()
 
+		log.debug("<<< Exiting getTestFile(challengeName={},challengeKtFile={},solutionKtFile={},solution={})", challengeName, challengeKtFile, solutionKtFile, solution)
         return TestFile(testrSolutionFileName, relativePath, lines)
     }
 
@@ -56,15 +62,19 @@ object KotlinGeneratorUtils {
             .packageFqName
             .toString()
             .removePrefix("com.igorwojda.")
+			log.debug(">>> Entering getChallengeName(challengeKtFile={})", challengeKtFile)
+			log.debug("<<< Exiting getChallengeName(challengeKtFile={})", challengeKtFile)
             .replace(".", "_")
 
     private fun getTests(challengeKtFile: KtFile): List<String> {
         val tests = challengeKtFile
+			log.debug(">>> Entering getTests(challengeKtFile={})", challengeKtFile)
             .children
             .filterIsInstance<KtClass>()
             .firstOrNull { it.name == "Test" }
             .also { checkNotNull(it) { "Missing 'Test' class in ${challengeKtFile.name}" } }
             ?.text
+			log.debug("<<< Exiting getTests(challengeKtFile={})", challengeKtFile)
             ?.split("\n")
 
         return tests ?: listOf()
@@ -81,10 +91,13 @@ object KotlinGeneratorUtils {
         .toList()
 
     private fun getPackage(ktFile: KtFile, solutionName: String) =
+		log.debug(">>> Entering getPackage(ktFile={},solutionName={})", ktFile, solutionName)
+		log.debug("<<< Exiting getPackage(ktFile={},solutionName={})", ktFile, solutionName)
         "package generated.${ktFile.packageFqName}.$solutionName".lowercase()
 
     private fun getFileName(solution: KtObjectDeclaration, challengeName: String): String {
         val solutionName = checkNotNull(solution.name) { "Solution name is null" }
+		log.debug(">>> Entering getFileName(solution={},challengeName={})", solution, challengeName)
         return "Test_${challengeName}_$solutionName.kt"
     }
 
