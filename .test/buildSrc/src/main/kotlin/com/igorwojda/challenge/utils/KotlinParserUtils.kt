@@ -9,8 +9,10 @@ import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.psi.KtFile
 import java.io.File
+import org.slf4j.LoggerFactory
 
 object KotlinParserUtils {
+	private val log = LoggerFactory.getLogger(KotlinParserUtils::class.java)
     private val project by lazy {
         KotlinCoreEnvironment.createForProduction(
             Disposer.newDisposable(),
@@ -20,13 +22,17 @@ object KotlinParserUtils {
     }
 
     fun getChallengeFile(challengeDirectoryPath: File, challengeFile: ChallengeFile): File {
+		log.debug(">>> Entering getChallengeFile(challengeDirectoryPath={},challengeFile={})", challengeDirectoryPath, challengeFile)
         val path = "${challengeDirectoryPath.path}/${challengeFile.fileName}"
+		log.debug("<<< Exiting getChallengeFile(challengeDirectoryPath={},challengeFile={})", challengeDirectoryPath, challengeFile)
         return File(path)
     }
 
     fun getChallengeKtFile(challengeDirectoryPath: File, challengeFile: ChallengeFile): KtFile {
+		log.debug(">>> Entering getChallengeKtFile(challengeDirectoryPath={},challengeFile={})", challengeDirectoryPath, challengeFile)
         val file = getChallengeFile(challengeDirectoryPath, challengeFile)
         val fullFileName = "${challengeDirectoryPath.path}/${challengeFile.fileName}"
+		log.debug("<<< Exiting getChallengeKtFile(challengeDirectoryPath={},challengeFile={})", challengeDirectoryPath, challengeFile)
         return getChallengeKtFile(file.readText(), fullFileName)
     }
 
